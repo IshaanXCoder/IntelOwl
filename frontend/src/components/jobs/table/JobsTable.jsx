@@ -33,9 +33,19 @@ const toPassTableProps = {
 export default function JobsTable({ searchFromDateValue, searchToDateValue }) {
   useTitle("IntelOwl | Jobs History", { restoreOnUnmount: true });
 
-  const [playbooksLoading, playbooksError] = usePluginConfigurationStore(
-    (state) => [state.playbooksLoading, state.playbooksError],
-  );
+  const [playbooksLoading, playbooksError, playbooks, retrievePlaybooks] =
+    usePluginConfigurationStore((state) => [
+      state.playbooksLoading,
+      state.playbooksError,
+      state.playbooks,
+      state.retrievePlaybooksConfiguration,
+    ]);
+
+  React.useEffect(() => {
+    if (playbooksLoading && playbooks.length === 0) {
+      retrievePlaybooks();
+    }
+  }, [playbooksLoading, playbooks.length, retrievePlaybooks]);
 
   const [
     data,

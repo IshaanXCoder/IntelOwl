@@ -25,13 +25,37 @@ export function PlaybookFlows({ playbook }) {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   // API/ store
-  const [pivotsLoading, pivotStored, playbooksLoading, playbooksStored] =
-    usePluginConfigurationStore((state) => [
-      state.pivotsLoading,
-      state.pivots,
-      state.playbooksLoading,
-      state.playbooks,
-    ]);
+  const [
+    pivotsLoading,
+    pivotStored,
+    playbooksLoading,
+    playbooksStored,
+    retrievePivots,
+    retrievePlaybooks,
+  ] = usePluginConfigurationStore((state) => [
+    state.pivotsLoading,
+    state.pivots,
+    state.playbooksLoading,
+    state.playbooks,
+    state.retrievePivotsConfiguration,
+    state.retrievePlaybooksConfiguration,
+  ]);
+
+  React.useEffect(() => {
+    if (pivotsLoading && pivotStored.length === 0) {
+      retrievePivots();
+    }
+    if (playbooksLoading && playbooksStored.length === 0) {
+      retrievePlaybooks();
+    }
+  }, [
+    pivotsLoading,
+    pivotStored.length,
+    playbooksLoading,
+    playbooksStored.length,
+    retrievePivots,
+    retrievePlaybooks,
+  ]);
 
   React.useEffect(() => {
     if (!pivotsLoading && !playbooksLoading) {

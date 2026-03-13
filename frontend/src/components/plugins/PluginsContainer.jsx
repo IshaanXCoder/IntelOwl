@@ -5,7 +5,7 @@ import { IoIosEye } from "react-icons/io";
 import { MdInput } from "react-icons/md";
 import { PiGraphFill } from "react-icons/pi";
 import { BsFillPlusCircleFill } from "react-icons/bs";
-import { NavLink as RRNavLink, useLocation } from "react-router-dom";
+import { NavLink as RRNavLink, Navigate, useLocation } from "react-router-dom";
 import { Button, Col, Nav, NavItem } from "reactstrap";
 
 import { FallBackLoading } from "@certego/certego-ui";
@@ -23,6 +23,12 @@ const Playbooks = React.lazy(() => import("./tables/Playbooks"));
 export default function PluginsContainer() {
   console.debug("PluginsContainer rendered!");
   const location = useLocation();
+  const hasPaginationParam = new URLSearchParams(location.search).has("page");
+
+  if (!hasPaginationParam) {
+    return <Navigate replace to={`${location.pathname}?page=1`} />;
+  }
+
   const pluginsPage = location?.pathname?.split("/")[2]?.slice(0, -1);
   const enableCreateButton = [
     PluginsTypes.ANALYZER,
@@ -99,7 +105,7 @@ export default function PluginsContainer() {
     <>
       <Nav className="nav-tabs">
         <NavItem>
-          <RRNavLink className="nav-link" to="/plugins/analyzers">
+          <RRNavLink className="nav-link" to="/plugins/analyzers?page=1">
             <span id="analyzers">
               <AiOutlineApi />
               &nbsp;Analyzers
@@ -107,7 +113,7 @@ export default function PluginsContainer() {
           </RRNavLink>
         </NavItem>
         <NavItem>
-          <RRNavLink className="nav-link" to="/plugins/connectors">
+          <RRNavLink className="nav-link" to="/plugins/connectors?page=1">
             <span id="connectors">
               <TiFlowChildren />
               &nbsp;Connectors
@@ -115,7 +121,7 @@ export default function PluginsContainer() {
           </RRNavLink>
         </NavItem>
         <NavItem>
-          <RRNavLink className="nav-link" to="/plugins/pivots">
+          <RRNavLink className="nav-link" to="/plugins/pivots?page=1">
             <span id="pivots">
               <PiGraphFill />
               &nbsp;Pivots
@@ -123,7 +129,7 @@ export default function PluginsContainer() {
           </RRNavLink>
         </NavItem>
         <NavItem>
-          <RRNavLink className="nav-link" to="/plugins/visualizers">
+          <RRNavLink className="nav-link" to="/plugins/visualizers?page=1">
             <span id="visualizers">
               <IoIosEye />
               &nbsp;Visualizers
@@ -131,7 +137,7 @@ export default function PluginsContainer() {
           </RRNavLink>
         </NavItem>
         <NavItem>
-          <RRNavLink className="nav-link" to="/plugins/ingestors">
+          <RRNavLink className="nav-link" to="/plugins/ingestors?page=1">
             <span id="ingestors">
               <MdInput />
               &nbsp;Ingestors
@@ -139,7 +145,7 @@ export default function PluginsContainer() {
           </RRNavLink>
         </NavItem>
         <NavItem>
-          <RRNavLink className="nav-link" to="/plugins/playbooks">
+          <RRNavLink className="nav-link" to="/plugins/playbooks?page=1">
             <span id="playbooks">
               <TiBook />
               &nbsp;Playbooks

@@ -265,6 +265,15 @@ export default function ScanForm() {
     connectorsError,
     playbooksError,
     playbooks,
+    analyzers,
+    connectors,
+    visualizers,
+    pivots,
+    retrieveAnalyzers,
+    retrieveConnectors,
+    retrieveVisualizers,
+    retrievePivots,
+    retrievePlaybooks,
   ] = usePluginConfigurationStore((state) => [
     state.analyzersLoading,
     state.connectorsLoading,
@@ -275,6 +284,49 @@ export default function ScanForm() {
     state.connectorsError,
     state.playbooksError,
     state.playbooks,
+    state.analyzers,
+    state.connectors,
+    state.visualizers,
+    state.pivots,
+    state.retrieveAnalyzersConfiguration,
+    state.retrieveConnectorsConfiguration,
+    state.retrieveVisualizersConfiguration,
+    state.retrievePivotsConfiguration,
+    state.retrievePlaybooksConfiguration,
+  ]);
+
+  React.useEffect(() => {
+    if (analyzersLoading && analyzers.length === 0) {
+      retrieveAnalyzers();
+    }
+    if (connectorsLoading && connectors.length === 0) {
+      retrieveConnectors();
+    }
+    if (visualizersLoading && visualizers.length === 0) {
+      retrieveVisualizers();
+    }
+    if (pivotsLoading && pivots.length === 0) {
+      retrievePivots();
+    }
+    if (playbooksLoading && playbooks.length === 0) {
+      retrievePlaybooks();
+    }
+  }, [
+    analyzersLoading,
+    analyzers.length,
+    connectorsLoading,
+    connectors.length,
+    visualizersLoading,
+    visualizers.length,
+    pivotsLoading,
+    pivots.length,
+    playbooksLoading,
+    playbooks.length,
+    retrieveAnalyzers,
+    retrieveConnectors,
+    retrieveVisualizers,
+    retrievePivots,
+    retrievePlaybooks,
   ]);
 
   const pluginsLoading =

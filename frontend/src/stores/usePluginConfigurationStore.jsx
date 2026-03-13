@@ -15,16 +15,16 @@ import {
 } from "../constants/apiURLs";
 import { prettifyErrors } from "../utils/api";
 
+const pendingPluginRequests = new Map();
+
 async function downloadAllPlugin(pluginUrl) {
   const pageSize = 70;
   let pluginList = [];
-  // we need to request the first chunk to know how many chunks are available
   const resp = await axios.get(pluginUrl, {
     params: { page: 1, page_size: pageSize },
   });
   pluginList = pluginList.concat(resp.data.results);
 
-  // in case there are others chunks, download all of them concurrently
   if (resp.data.total_pages > 1) {
     const additionalRequests = [];
     for (
@@ -38,12 +38,28 @@ async function downloadAllPlugin(pluginUrl) {
         }),
       );
     }
-    const multipleResponses = await Promise.all(additionalRequests);
-    multipleResponses.forEach((response) => {
-      pluginList = pluginList.concat(response.data.results);
-    });
+
+    const multipleResponses = await Promise.allSettled(additionalRequests);
+    multipleResponses
+      .filter((response) => response.status === "fulfilled")
+      .forEach((successfulResponse) => {
+        pluginList = pluginList.concat(successfulResponse.value.data.results);
+      });
   }
   return pluginList;
+}
+
+async function downloadAllPluginDedup(pluginUrl) {
+  if (pendingPluginRequests.has(pluginUrl)) {
+    return pendingPluginRequests.get(pluginUrl);
+  }
+
+  const requestPromise = downloadAllPlugin(pluginUrl).finally(() => {
+    pendingPluginRequests.delete(pluginUrl);
+  });
+
+  pendingPluginRequests.set(pluginUrl, requestPromise);
+  return requestPromise;
 }
 
 export const usePluginConfigurationStore = create((set, get) => ({
@@ -92,7 +108,7 @@ export const usePluginConfigurationStore = create((set, get) => ({
       console.debug(
         "usePluginConfigurationStore - retrieveAnalyzersConfiguration: ",
       );
-      const analyzers = await downloadAllPlugin(ANALYZERS_CONFIG_URI);
+      const analyzers = await downloadAllPluginDedup(ANALYZERS_CONFIG_URI);
       console.debug(analyzers);
       set({
         analyzersError: null,
@@ -106,7 +122,7 @@ export const usePluginConfigurationStore = create((set, get) => ({
   retrieveConnectorsConfiguration: async () => {
     try {
       set({ connectorsLoading: true });
-      const connectors = await downloadAllPlugin(CONNECTORS_CONFIG_URI);
+      const connectors = await downloadAllPluginDedup(CONNECTORS_CONFIG_URI);
       console.debug(
         "usePluginConfigurationStore - retrieveConnectorsConfiguration: ",
       );
@@ -123,7 +139,7 @@ export const usePluginConfigurationStore = create((set, get) => ({
   retrieveVisualizersConfiguration: async () => {
     try {
       set({ visualizersLoading: true });
-      const visualizers = await downloadAllPlugin(VISUALIZERS_CONFIG_URI);
+      const visualizers = await downloadAllPluginDedup(VISUALIZERS_CONFIG_URI);
       console.debug(
         "usePluginConfigurationStore - retrieveVisualizersConfiguration: ",
       );
@@ -140,7 +156,7 @@ export const usePluginConfigurationStore = create((set, get) => ({
   retrieveIngestorsConfiguration: async () => {
     try {
       set({ ingestorsLoading: true });
-      const ingestors = await downloadAllPlugin(INGESTORS_CONFIG_URI);
+      const ingestors = await downloadAllPluginDedup(INGESTORS_CONFIG_URI);
       console.debug(
         "usePluginConfigurationStore - retrieveIngestorsConfiguration: ",
       );
@@ -157,7 +173,7 @@ export const usePluginConfigurationStore = create((set, get) => ({
   retrievePivotsConfiguration: async () => {
     try {
       set({ pivotsLoading: true });
-      const pivots = await downloadAllPlugin(PIVOTS_CONFIG_URI);
+      const pivots = await downloadAllPluginDedup(PIVOTS_CONFIG_URI);
       console.debug(
         "usePluginConfigurationStore - retrievePivotsConfiguration: ",
       );
@@ -174,7 +190,7 @@ export const usePluginConfigurationStore = create((set, get) => ({
   retrievePlaybooksConfiguration: async () => {
     try {
       set({ playbooksLoading: true });
-      const playbooks = await downloadAllPlugin(PLAYBOOKS_CONFIG_URI);
+      const playbooks = await downloadAllPluginDedup(PLAYBOOKS_CONFIG_URI);
       console.debug(
         "usePluginConfigurationStore - retrievePlaybooksConfiguration: ",
       );

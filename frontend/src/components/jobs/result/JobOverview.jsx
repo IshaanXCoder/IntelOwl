@@ -69,6 +69,10 @@ export function JobOverview({
     connectors,
     visualizers,
     pivots,
+    retrieveAnalyzers,
+    retrieveConnectors,
+    retrieveVisualizers,
+    retrievePivots,
   ] = usePluginConfigurationStore((state) => [
     state.analyzersLoading,
     state.connectorsLoading,
@@ -78,6 +82,38 @@ export function JobOverview({
     state.connectors,
     state.visualizers,
     state.pivots,
+    state.retrieveAnalyzersConfiguration,
+    state.retrieveConnectorsConfiguration,
+    state.retrieveVisualizersConfiguration,
+    state.retrievePivotsConfiguration,
+  ]);
+
+  React.useEffect(() => {
+    if (analyzersLoading && analyzers.length === 0) {
+      retrieveAnalyzers();
+    }
+    if (connectorsLoading && connectors.length === 0) {
+      retrieveConnectors();
+    }
+    if (visualizersLoading && visualizers.length === 0) {
+      retrieveVisualizers();
+    }
+    if (pivotsLoading && pivots.length === 0) {
+      retrievePivots();
+    }
+  }, [
+    analyzersLoading,
+    analyzers.length,
+    connectorsLoading,
+    connectors.length,
+    visualizersLoading,
+    visualizers.length,
+    pivotsLoading,
+    pivots.length,
+    retrieveAnalyzers,
+    retrieveConnectors,
+    retrieveVisualizers,
+    retrievePivots,
   ]);
 
   const rawElements = React.useMemo(
