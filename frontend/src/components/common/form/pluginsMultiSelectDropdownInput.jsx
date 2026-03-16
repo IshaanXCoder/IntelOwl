@@ -55,12 +55,19 @@ export function AnalyzersMultiSelectDropdownInput(props) {
   console.debug(formik);
 
   // API/ store
-  const [analyzersLoading, analyzersError, analyzers] =
+  const [analyzersLoading, analyzersError, analyzers, retrieveAnalyzers] =
     usePluginConfigurationStore((state) => [
       state.analyzersLoading,
       state.analyzersError,
       state.analyzers,
+      state.retrieveAnalyzersConfiguration,
     ]);
+
+  React.useEffect(() => {
+    if (!analyzersLoading && analyzers.length === 0) {
+      retrieveAnalyzers();
+    }
+  }, [analyzersLoading, analyzers.length, retrieveAnalyzers]);
 
   const analyzersGrouped = React.useMemo(() => {
     const grouped = {
@@ -87,11 +94,11 @@ export function AnalyzersMultiSelectDropdownInput(props) {
       return dropdownOptions(analyzersGrouped[formik.values.classification]);
     // case 2: editing/creating playbook config (no classification in formik)
     if (formik.values.type) {
-      const multipleSupportedTypes = [
-        ...new Set(
+      const multipleSupportedTypes = Array.from(
+        new Set(
           formik.values.type.map((type) => analyzersGrouped[type]).flat(),
         ),
-      ];
+      );
       return dropdownOptions(multipleSupportedTypes);
     }
     // case 3: creating pivot config (no classification or type in formik)
@@ -127,12 +134,19 @@ export function ConnectorsMultiSelectDropdownInput({ formik }) {
   console.debug(formik);
 
   // API/ store
-  const [connectorsLoading, connectorsError, connectors] =
+  const [connectorsLoading, connectorsError, connectors, retrieveConnectors] =
     usePluginConfigurationStore((state) => [
       state.connectorsLoading,
       state.connectorsError,
       state.connectors,
+      state.retrieveConnectorsConfiguration,
     ]);
+
+  React.useEffect(() => {
+    if (!connectorsLoading && connectors.length === 0) {
+      retrieveConnectors();
+    }
+  }, [connectorsLoading, connectors.length, retrieveConnectors]);
 
   const connectorOptions = React.useMemo(
     () => dropdownOptions(connectors),
@@ -163,12 +177,23 @@ export function VisualizersMultiSelectDropdownInput({ formik }) {
   console.debug(formik);
 
   // API/ store
-  const [visualizersLoading, visualizersError, visualizers] =
-    usePluginConfigurationStore((state) => [
-      state.visualizersLoading,
-      state.visualizersError,
-      state.visualizers,
-    ]);
+  const [
+    visualizersLoading,
+    visualizersError,
+    visualizers,
+    retrieveVisualizers,
+  ] = usePluginConfigurationStore((state) => [
+    state.visualizersLoading,
+    state.visualizersError,
+    state.visualizers,
+    state.retrieveVisualizersConfiguration,
+  ]);
+
+  React.useEffect(() => {
+    if (!visualizersLoading && visualizers.length === 0) {
+      retrieveVisualizers();
+    }
+  }, [visualizersLoading, visualizers.length, retrieveVisualizers]);
 
   const visualizerOptions = React.useMemo(
     () => dropdownOptions(visualizers),
@@ -201,9 +226,19 @@ export function PivotsMultiSelectDropdownInput({ formik }) {
   console.debug(formik);
 
   // API/ store
-  const [pivotsLoading, pivotsError, pivots] = usePluginConfigurationStore(
-    (state) => [state.pivotsLoading, state.pivotsError, state.pivots],
-  );
+  const [pivotsLoading, pivotsError, pivots, retrievePivots] =
+    usePluginConfigurationStore((state) => [
+      state.pivotsLoading,
+      state.pivotsError,
+      state.pivots,
+      state.retrievePivotsConfiguration,
+    ]);
+
+  React.useEffect(() => {
+    if (!pivotsLoading && pivots.length === 0) {
+      retrievePivots();
+    }
+  }, [pivotsLoading, pivots.length, retrievePivots]);
 
   const pivotOptions = React.useMemo(() => dropdownOptions(pivots), [pivots]);
 
@@ -301,12 +336,19 @@ export function PlaybookMultiSelectDropdownInput(props) {
     ),
   );
 
-  const [playbooksLoading, playbooksError, playbooks] =
+  const [playbooksLoading, playbooksError, playbooks, retrievePlaybooks] =
     usePluginConfigurationStore((state) => [
       state.playbooksLoading,
       state.playbooksError,
       state.playbooks,
+      state.retrievePlaybooksConfiguration,
     ]);
+
+  React.useEffect(() => {
+    if (!playbooksLoading && playbooks.length === 0) {
+      retrievePlaybooks();
+    }
+  }, [playbooksLoading, playbooks.length, retrievePlaybooks]);
 
   const dropdownPlaybookOptions = React.useMemo(() => {
     // case 1: scan page (classification in formik)

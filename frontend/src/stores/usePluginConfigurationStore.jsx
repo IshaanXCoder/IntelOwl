@@ -18,7 +18,6 @@ import { prettifyErrors } from "../utils/api";
 async function downloadAllPlugin(pluginUrl) {
   const pageSize = 70;
   let pluginList = [];
-  // we need to request the first chunk to know how many chunks are available
   const resp = await axios.get(pluginUrl, {
     params: { page: 1, page_size: pageSize },
   });
@@ -38,21 +37,24 @@ async function downloadAllPlugin(pluginUrl) {
         }),
       );
     }
-    const multipleResponses = await Promise.all(additionalRequests);
-    multipleResponses.forEach((response) => {
-      pluginList = pluginList.concat(response.data.results);
-    });
+
+    const multipleResponses = await Promise.allSettled(additionalRequests);
+    multipleResponses
+      .filter((response) => response.status === "fulfilled")
+      .forEach((successfulResponse) => {
+        pluginList = pluginList.concat(successfulResponse.value.data.results);
+      });
   }
   return pluginList;
 }
 
 export const usePluginConfigurationStore = create((set, get) => ({
-  analyzersLoading: true,
-  connectorsLoading: true,
-  pivotsLoading: true,
-  visualizersLoading: true,
-  ingestorsLoading: true,
-  playbooksLoading: true,
+  analyzersLoading: false,
+  connectorsLoading: false,
+  pivotsLoading: false,
+  visualizersLoading: false,
+  ingestorsLoading: false,
+  playbooksLoading: false,
   analyzersError: null,
   connectorsError: null,
   pivotsError: null,
@@ -65,35 +67,11 @@ export const usePluginConfigurationStore = create((set, get) => ({
   visualizers: [],
   ingestors: [],
   playbooks: [],
-  hydrate: () => {
-    // this function is called to check if we need to download the data related to the plugins or not
-    if (get().analyzersLoading) {
-      get().retrieveAnalyzersConfiguration();
-    }
-    if (get().connectorsLoading) {
-      get().retrieveConnectorsConfiguration();
-    }
-    if (get().pivotsLoading) {
-      get().retrievePivotsConfiguration();
-    }
-    if (get().visualizersLoading) {
-      get().retrieveVisualizersConfiguration();
-    }
-    if (get().ingestorsLoading) {
-      get().retrieveIngestorsConfiguration();
-    }
-    if (get().playbooksLoading) {
-      get().retrievePlaybooksConfiguration();
-    }
-  },
   retrieveAnalyzersConfiguration: async () => {
+    if (get().analyzersLoading) return;
     try {
       set({ analyzersLoading: true });
-      console.debug(
-        "usePluginConfigurationStore - retrieveAnalyzersConfiguration: ",
-      );
       const analyzers = await downloadAllPlugin(ANALYZERS_CONFIG_URI);
-      console.debug(analyzers);
       set({
         analyzersError: null,
         analyzers,
@@ -104,13 +82,10 @@ export const usePluginConfigurationStore = create((set, get) => ({
     }
   },
   retrieveConnectorsConfiguration: async () => {
+    if (get().connectorsLoading) return;
     try {
       set({ connectorsLoading: true });
       const connectors = await downloadAllPlugin(CONNECTORS_CONFIG_URI);
-      console.debug(
-        "usePluginConfigurationStore - retrieveConnectorsConfiguration: ",
-      );
-      console.debug(connectors);
       set({
         connectorsError: null,
         connectors,
@@ -121,13 +96,10 @@ export const usePluginConfigurationStore = create((set, get) => ({
     }
   },
   retrieveVisualizersConfiguration: async () => {
+    if (get().visualizersLoading) return;
     try {
       set({ visualizersLoading: true });
       const visualizers = await downloadAllPlugin(VISUALIZERS_CONFIG_URI);
-      console.debug(
-        "usePluginConfigurationStore - retrieveVisualizersConfiguration: ",
-      );
-      console.debug(visualizers);
       set({
         visualizersError: null,
         visualizers,
@@ -138,13 +110,10 @@ export const usePluginConfigurationStore = create((set, get) => ({
     }
   },
   retrieveIngestorsConfiguration: async () => {
+    if (get().ingestorsLoading) return;
     try {
       set({ ingestorsLoading: true });
       const ingestors = await downloadAllPlugin(INGESTORS_CONFIG_URI);
-      console.debug(
-        "usePluginConfigurationStore - retrieveIngestorsConfiguration: ",
-      );
-      console.debug(ingestors);
       set({
         ingestorsError: null,
         ingestors,
@@ -155,13 +124,10 @@ export const usePluginConfigurationStore = create((set, get) => ({
     }
   },
   retrievePivotsConfiguration: async () => {
+    if (get().pivotsLoading) return;
     try {
       set({ pivotsLoading: true });
       const pivots = await downloadAllPlugin(PIVOTS_CONFIG_URI);
-      console.debug(
-        "usePluginConfigurationStore - retrievePivotsConfiguration: ",
-      );
-      console.debug(pivots);
       set({
         pivotsError: null,
         pivots,
@@ -172,13 +138,10 @@ export const usePluginConfigurationStore = create((set, get) => ({
     }
   },
   retrievePlaybooksConfiguration: async () => {
+    if (get().playbooksLoading) return;
     try {
       set({ playbooksLoading: true });
       const playbooks = await downloadAllPlugin(PLAYBOOKS_CONFIG_URI);
-      console.debug(
-        "usePluginConfigurationStore - retrievePlaybooksConfiguration: ",
-      );
-      console.debug(playbooks);
       set({
         playbooksError: null,
         playbooks,

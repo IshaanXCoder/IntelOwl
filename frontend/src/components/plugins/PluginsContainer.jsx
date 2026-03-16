@@ -5,7 +5,7 @@ import { IoIosEye } from "react-icons/io";
 import { MdInput } from "react-icons/md";
 import { PiGraphFill } from "react-icons/pi";
 import { BsFillPlusCircleFill } from "react-icons/bs";
-import { NavLink as RRNavLink, useLocation } from "react-router-dom";
+import { NavLink as RRNavLink, Navigate, useLocation } from "react-router-dom";
 import { Button, Col, Nav, NavItem } from "reactstrap";
 
 import { FallBackLoading } from "@certego/certego-ui";
@@ -23,6 +23,8 @@ const Playbooks = React.lazy(() => import("./tables/Playbooks"));
 export default function PluginsContainer() {
   console.debug("PluginsContainer rendered!");
   const location = useLocation();
+  const hasPaginationParam = new URLSearchParams(location.search).has("page");
+
   const pluginsPage = location?.pathname?.split("/")[2]?.slice(0, -1);
   const enableCreateButton = [
     PluginsTypes.ANALYZER,
@@ -41,6 +43,10 @@ export default function PluginsContainer() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (!hasPaginationParam) {
+    return <Navigate replace to={`${location.pathname}?page=1`} />;
+  }
 
   const createButton = (
     <Col className="d-flex justify-content-end">

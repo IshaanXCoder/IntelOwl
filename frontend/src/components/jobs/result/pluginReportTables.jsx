@@ -17,6 +17,7 @@ import {
 } from "@certego/certego-ui";
 import { useSearchParams } from "react-router-dom";
 
+import { usePluginConfigurationStore } from "../../../stores/usePluginConfigurationStore";
 import { StatusTag } from "../../common/StatusTag";
 import { killPlugin, retryPlugin } from "./jobApi";
 import { PluginStatuses, PluginsTypes } from "../../../constants/pluginConst";
@@ -181,10 +182,46 @@ export function PluginsReportTable({
   pluginReports,
   pluginsStored,
   pluginsStoredLoading,
+  type,
 }) {
   console.debug("PluginsReportTable rendered");
   const [searchParams] = useSearchParams();
   const reports = pluginReports;
+
+  // fetch plugins configuration if missing
+  const [
+    retrieveAnalyzers,
+    retrieveConnectors,
+    retrieveVisualizers,
+    retrievePivots,
+  ] = usePluginConfigurationStore((state) => [
+    state.retrieveAnalyzersConfiguration,
+    state.retrieveConnectorsConfiguration,
+    state.retrieveVisualizersConfiguration,
+    state.retrievePivotsConfiguration,
+  ]);
+
+  React.useEffect(() => {
+    if (!pluginsStoredLoading && pluginsStored.length === 0) {
+      if (type === PluginsTypes.ANALYZER) {
+        retrieveAnalyzers();
+      } else if (type === PluginsTypes.CONNECTOR) {
+        retrieveConnectors();
+      } else if (type === PluginsTypes.VISUALIZER) {
+        retrieveVisualizers();
+      } else if (type === PluginsTypes.PIVOT) {
+        retrievePivots();
+      }
+    }
+  }, [
+    pluginsStoredLoading,
+    pluginsStored.length,
+    retrieveAnalyzers,
+    retrieveConnectors,
+    retrieveVisualizers,
+    retrievePivots,
+    type,
+  ]);
 
   const tableInitialState = React.useMemo(() => {
     const filterableColumnIds = tableProps.columns

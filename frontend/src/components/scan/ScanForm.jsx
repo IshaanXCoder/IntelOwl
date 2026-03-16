@@ -111,10 +111,6 @@ export default function ScanForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  console.debug(
-    `ScanForm rendered! Observable in GET param: ${observableParam}`,
-  );
-
   const formik = useFormik({
     initialValues: {
       observableType: JobTypes.OBSERVABLE,
@@ -133,9 +129,6 @@ export default function ScanForm() {
       scan_check_time: 24,
     },
     validate: (values) => {
-      console.debug("validate - values");
-      console.debug(values);
-
       const errors = {};
 
       // error in plugins download
@@ -194,8 +187,6 @@ export default function ScanForm() {
         errors.tlp = "Invalid choice";
       }
 
-      console.debug("formik validation errors");
-      console.debug(errors);
       return errors;
     },
     onSubmit: async (values) => {
@@ -258,8 +249,6 @@ export default function ScanForm() {
   const [
     analyzersLoading,
     connectorsLoading,
-    visualizersLoading,
-    pivotsLoading,
     playbooksLoading,
     analyzersError,
     connectorsError,
@@ -268,8 +257,6 @@ export default function ScanForm() {
   ] = usePluginConfigurationStore((state) => [
     state.analyzersLoading,
     state.connectorsLoading,
-    state.visualizersLoading,
-    state.pivotsLoading,
     state.playbooksLoading,
     state.analyzersError,
     state.connectorsError,
@@ -277,11 +264,14 @@ export default function ScanForm() {
     state.playbooks,
   ]);
 
+  const [scanType, setScanType] = React.useState(
+    formik.values.analysisOptionValues,
+  );
+
   const pluginsLoading =
-    analyzersLoading ||
-    connectorsLoading ||
-    visualizersLoading ||
-    pivotsLoading;
+    scanType === ScanTypes.playbooks
+      ? playbooksLoading
+      : analyzersLoading || connectorsLoading;
 
   const selectObservableType = (value) => {
     formik.setFieldValue("observableType", value, false);
@@ -364,10 +354,6 @@ export default function ScanForm() {
     setInputValue(observableValue);
   };
 
-  const [scanType, setScanType] = React.useState(
-    formik.values.analysisOptionValues,
-  );
-
   const updateAnalysisOptionValues = (newAnalysisType) => {
     if (
       scanType === ScanTypes.playbooks &&
@@ -435,7 +421,8 @@ export default function ScanForm() {
   useEffect(() => {
     if (observableParam) {
       updateSelectedObservable(observableParam, 0);
-      if (formik.playbook) updateSelectedPlaybook(formik.playbook);
+      if (formik.values.playbook)
+        updateSelectedPlaybook(formik.values.playbook);
     } else if (isSampleParam) {
       selectObservableType(JobTypes.FILE);
     }
@@ -478,9 +465,6 @@ export default function ScanForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toggleMultipleObservablesModal, formik.values.observable_names]);
 
-  console.debug(`classification: ${formik.values.classification}`);
-  console.debug("formik");
-  console.debug(formik);
   return (
     <Container fluid className="d-flex justify-content-center">
       {/* Form */}

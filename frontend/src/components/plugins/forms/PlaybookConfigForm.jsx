@@ -50,8 +50,6 @@ const stateSelector = (state) => [
 ];
 
 export function PlaybookConfigForm({ playbookConfig, toggle, isEditing }) {
-  console.debug("PlaybookConfigForm rendered!");
-
   // states
   const [selectedPluginsParams, setSelectedPluginsParams] = React.useState({});
   const [editableConfig, setEditableConfig] = React.useState({});

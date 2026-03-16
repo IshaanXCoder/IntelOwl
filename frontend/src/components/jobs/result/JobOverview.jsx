@@ -27,7 +27,7 @@ import {
 import { StatusIcon } from "../../common/icon/StatusIcon";
 import VisualizerReport from "../../common/visualizer/visualizer";
 import { JobFinalStatuses } from "../../../constants/jobConst";
-import { PluginStatuses } from "../../../constants/pluginConst";
+import { PluginStatuses, PluginsTypes } from "../../../constants/pluginConst";
 import { JobResultSections } from "../../../constants/miscConst";
 
 import { JobInfoCard } from "./JobInfoCard";
@@ -69,6 +69,10 @@ export function JobOverview({
     connectors,
     visualizers,
     pivots,
+    retrieveAnalyzers,
+    retrieveConnectors,
+    retrieveVisualizers,
+    retrievePivots,
   ] = usePluginConfigurationStore((state) => [
     state.analyzersLoading,
     state.connectorsLoading,
@@ -78,6 +82,38 @@ export function JobOverview({
     state.connectors,
     state.visualizers,
     state.pivots,
+    state.retrieveAnalyzersConfiguration,
+    state.retrieveConnectorsConfiguration,
+    state.retrieveVisualizersConfiguration,
+    state.retrievePivotsConfiguration,
+  ]);
+
+  React.useEffect(() => {
+    if (analyzersLoading && analyzers.length === 0) {
+      retrieveAnalyzers();
+    }
+    if (connectorsLoading && connectors.length === 0) {
+      retrieveConnectors();
+    }
+    if (visualizersLoading && visualizers.length === 0) {
+      retrieveVisualizers();
+    }
+    if (pivotsLoading && pivots.length === 0) {
+      retrievePivots();
+    }
+  }, [
+    analyzersLoading,
+    analyzers.length,
+    connectorsLoading,
+    connectors.length,
+    visualizersLoading,
+    visualizers.length,
+    pivotsLoading,
+    pivots.length,
+    retrieveAnalyzers,
+    retrieveConnectors,
+    retrieveVisualizers,
+    retrievePivots,
   ]);
 
   const rawElements = React.useMemo(
@@ -104,6 +140,7 @@ export function JobOverview({
             pluginReports={job?.analyzer_reports}
             pluginsStored={analyzers}
             pluginsStoredLoading={analyzersLoading}
+            type={PluginsTypes.ANALYZER}
           />
         ),
       },
@@ -129,6 +166,7 @@ export function JobOverview({
             pluginReports={job?.connector_reports}
             pluginsStored={connectors}
             pluginsStoredLoading={connectorsLoading}
+            type={PluginsTypes.CONNECTOR}
           />
         ),
       },
@@ -154,6 +192,7 @@ export function JobOverview({
             pluginReports={job?.pivot_reports}
             pluginsStored={pivots}
             pluginsStoredLoading={pivotsLoading}
+            type={PluginsTypes.PIVOT}
           />
         ),
       },
@@ -183,6 +222,7 @@ export function JobOverview({
             pluginReports={job?.visualizer_reports}
             pluginsStored={visualizers}
             pluginsStoredLoading={visualizersLoading}
+            type={PluginsTypes.VISUALIZER}
           />
         ),
       },

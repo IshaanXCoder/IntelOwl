@@ -4,15 +4,9 @@ import { Container, Col } from "reactstrap";
 import useTitle from "react-use/lib/useTitle";
 import { Link } from "react-router-dom";
 
-import {
-  Loader,
-  DataTable,
-  TableHintIcon,
-  SyncButton,
-} from "@certego/certego-ui";
+import { useDataTable, TableHintIcon, SyncButton } from "@certego/certego-ui";
 
 import { useOrganizationStore } from "../../../stores/useOrganizationStore";
-import { usePluginConfigurationStore } from "../../../stores/usePluginConfigurationStore";
 import { PluginsTypes } from "../../../constants/pluginConst";
 import { INTELOWL_DOCS_URL } from "../../../constants/environment";
 
@@ -26,32 +20,49 @@ const tableInitialState = {
 export default function PluginWrapper({
   heading,
   description,
-  stateSelector,
+  apiUrl,
   columns,
   type,
 }) {
-  const { pluginsState: organizationPluginsState } = useOrganizationStore(
-    React.useCallback(
-      (state) => ({
-        pluginsState: state.pluginsState,
-      }),
-      [],
-    ),
+  const organizationPluginsState = useOrganizationStore(
+    React.useCallback((state) => state.pluginsState, []),
   );
 
-  // API/ store
-  const [loading, error, dataListInitial, refetch] =
-    usePluginConfigurationStore(stateSelector);
+  const refetchRef = React.useRef(() => {});
+  const rowRefetch = React.useCallback(() => refetchRef.current(), []);
 
-  const dataList = dataListInitial.map((data) => {
-    const newData = data;
-    newData.orgPluginDisabled =
-      organizationPluginsState[data.name] !== undefined &&
-      organizationPluginsState[data.name].disabled;
-    newData.plugin_type = type;
-    newData.refetch = refetch;
-    return newData;
-  });
+  const tableProps = React.useMemo(
+    () => ({
+      config: tableConfig,
+      initialState: tableInitialState,
+      columns,
+      autoResetPage: false,
+    }),
+    [columns],
+  );
+
+  const dataModifier = React.useCallback(
+    (responseData) =>
+      (responseData?.results || []).map((data) => ({
+        ...data,
+        orgPluginDisabled:
+          organizationPluginsState[data.name] !== undefined &&
+          organizationPluginsState[data.name].disabled,
+        plugin_type: type,
+        refetch: rowRefetch,
+      })),
+    [organizationPluginsState, type, rowRefetch],
+  );
+
+  const tableConfigData = React.useMemo(() => ({ url: apiUrl }), [apiUrl]);
+
+  const [data, tableNode, refetch] = useDataTable(
+    tableConfigData,
+    tableProps,
+    dataModifier,
+  );
+
+  refetchRef.current = refetch;
 
   // page title
   useTitle(`IntelOwl | ${heading}`, { restoreOnUnmount: true });
@@ -63,7 +74,7 @@ export default function PluginWrapper({
         <Col className="ps-0">
           <h1>
             {heading}&nbsp;
-            <small className="text-muted">{dataList?.length} total</small>
+            <small className="text-muted">{data?.count || 0} total</small>
           </h1>
           <span className="text-muted">
             {description} For more info check the{" "}
@@ -82,21 +93,7 @@ export default function PluginWrapper({
         <SyncButton onClick={refetch} className="ms-auto m-0 py-1" />
       </div>
       {/* Table/Card View */}
-      <div style={{ height: "70vh", overflow: "scroll" }}>
-        <Loader
-          loading={loading}
-          error={error}
-          render={() => (
-            <DataTable
-              data={dataList}
-              config={tableConfig}
-              initialState={tableInitialState}
-              columns={columns}
-              autoResetPage
-            />
-          )}
-        />
-      </div>
+      <div style={{ height: "70vh", overflow: "scroll" }}>{tableNode}</div>
     </Container>
   );
 }
@@ -104,7 +101,7 @@ export default function PluginWrapper({
 PluginWrapper.propTypes = {
   heading: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
-  stateSelector: PropTypes.func.isRequired,
+  apiUrl: PropTypes.string.isRequired,
   columns: PropTypes.array.isRequired,
   type: PropTypes.oneOf(Object.values(PluginsTypes)).isRequired,
 };
