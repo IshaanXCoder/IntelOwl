@@ -3,7 +3,7 @@ name: Build & Tests
 
 on:
   pull_request:
-    branches: [master, develop]
+    branches: [master, develop, new-docker-optimisation]
     paths-ignore:
       - "**.md"
       - "docs/**"

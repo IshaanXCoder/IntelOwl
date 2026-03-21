@@ -6,7 +6,7 @@ name: Docker Build Cache
 
 on:
   push:
-    branches: [develop]
+    branches: [develop, new-docker-optimisation]
     paths-ignore:
       - "**.md"
       - "docs/**"
